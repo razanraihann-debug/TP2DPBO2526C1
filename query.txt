@@ -1,3 +1,3 @@
-TAMBAH 106 "Jumbo" "Animasi" 102 "Studio 2" "SU" 40000 "12:30" "Tersedia"
-TAMBAH 107 "Interstellar" "Sci-Fi" 169 "Studio 4" "13+" 60000 "18:30" "Tersedia"
-TAMBAH 108 "Dilan 1990" "Drama" 110 "Studio 2" "13+" 40000 "12:30" "Tersedia"
+INSERT 106 "Jumbo" "Animasi" 102 "Studio 2" "SU" 40000 "12:30" "Tersedia"
+INSERT 107 "Interstellar" "Sci-Fi" 169 "Studio 4" "13+" 60000 "18:30" "Tersedia"
+INSERT 108 "Dilan 1990" "Drama" 110 "Studio 2" "13+" 40000 "12:30" "Tersedia"

@@ -14,9 +14,10 @@ class FilmBioskop extends Film {
         string $genre = "",
         int $durasi = 0,
         string $studio = "",
-        string $klasifikasiUsia = ""
+        string $klasifikasiUsia = "",
+        string $gambar = ""
     ) {
-        parent::__construct($id, $judul, $genre);
+        parent::__construct($id, $judul, $genre, $gambar);
         $this->durasi          = $durasi;
         $this->studio          = $studio;
         $this->klasifikasiUsia = $klasifikasiUsia;
