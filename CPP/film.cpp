@@ -1,41 +1,35 @@
-#include <iostream>
 #include <string>
 
 using namespace std;
 
 //class cinema film
 class Film {
-    private:
-        int id;
-        string judul; 
-        string genre; 
-        string studio;
-        int durasi;
+private:
+    int id;
+    string judul;
+    string genre;
 
-    public:
-        //constructor (initializer)
-        Film(){
-            id = 0; 
-            judul = ""; 
-            genre = "";
-            studio = ""; 
-            durasi = 0;
-        };
+public:
+    Film() {
+        id = 0;
+        judul = "";
+        genre = "";
+    }
 
-        //getter
-        int getId() { return id; }
-        string getJudul() { return judul; }
-        string getGenre() { return genre; }
-        int getDurasi() { return durasi; }
-        string getStudio() { return studio; }
+    Film(int id, string judul, string genre) {
+        this->id = id;
+        this->judul = judul;
+        this->genre = genre;
+    }
 
-        //setter
-        void setId(int nilai) { id = nilai; }
-        void setJudul(string nilai) { judul = nilai; }
-        void setGenre(string nilai) { genre = nilai; }
-        void setDurasi(int nilai) { durasi = nilai; }
-        void setStudio(string nilai) { studio = nilai; }
+    int getId() const { return id; }
+    string getJudul() const { return judul; }
+    string getGenre() const { return genre; }
 
-        //destructor
-        ~Film() {}
+    void setId(int id) { this->id = id; }
+    void setJudul(string judul) { this->judul = judul; }
+    void setGenre(string genre) { this->genre = genre; }
+
+    virtual ~Film() {
+    }
 };

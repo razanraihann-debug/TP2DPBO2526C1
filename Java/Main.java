@@ -4,433 +4,254 @@ import java.util.Scanner;
 
 public class Main {
 
-    // fungsi untuk mencari indeks film berdasarkan ID
-    static int cariIndex(List<Film> daftarFilm, int id) {
-        for (int i = 0; i < daftarFilm.size(); i++) {
-            if (daftarFilm.get(i).getId() == id) {
-                return i;
-            }
+    // FUNGSI MENCARI ID FILM
+    static boolean idSudahAda(List<FilmTayang> daftarFilm, int id) {
+        for (FilmTayang film : daftarFilm) {
+            if (film.getId() == id) return true;
         }
-        return -1;
+        return false;
     }
 
-    // fungsi untuk mencetak garis horizontal
-    static void garis(int id, int judul, int genre, int durasi, int studio) {
-        System.out.println(
-            "+" + "-".repeat(id + 2) +
-            "+" + "-".repeat(judul + 2) +
-            "+" + "-".repeat(genre + 2) +
-            "+" + "-".repeat(durasi + 2) +
-            "+" + "-".repeat(studio + 2) + "+"
-        );
-    }
+    // FUNGSI MENGHITUNG LEBAR KOLOM
+    static int[] hitungLebar(List<FilmTayang> daftarFilm) {
+        int lebarId     = 2;
+        int lebarJudul  = 10;
+        int lebarGenre  = 5;
+        int lebarDurasi = 6;
+        int lebarStudio = 6;
+        int lebarUsia   = 10;
+        int lebarHarga  = 11;
+        int lebarJam    = 8;
+        int lebarStatus = 10;
 
-    // fungsi untuk mencetak header tabel
-    static void cetakHeader(
-        int id,
-        int judul,
-        int genre,
-        int durasi,
-        int studio
-    ) {
-        garis(id, judul, genre, durasi, studio);
-
-        System.out.printf(
-            "| %-" + id + "s | " +
-            "%-" + judul + "s | " +
-            "%-" + genre + "s | " +
-            "%" + durasi + "s | " +
-            "%-" + studio + "s |\n",
-            "ID",
-            "JUDUL FILM",
-            "GENRE",
-            "MENIT",
-            "STUDIO"
-        );
-
-        garis(id, judul, genre, durasi, studio);
-    }
-
-    // fungsi untuk mencetak satu baris data film
-    static void cetakBaris(
-        Film film,
-        int id,
-        int judul,
-        int genre,
-        int durasi,
-        int studio
-    ) {
-        System.out.printf(
-            "| %" + id + "d | " +
-            "%-" + judul + "s | " +
-            "%-" + genre + "s | " +
-            "%" + durasi + "d | " +
-            "%-" + studio + "s |\n",
-            film.getId(),
-            film.getJudul(),
-            film.getGenre(),
-            film.getDurasi(),
-            film.getStudio()
-        );
-    }
-
-    // fungsi untuk menghitung lebar kolom
-    static int[] hitungLebar(List<Film> daftarFilm) {
-        int id = 2;
-        int judul = 10;
-        int genre = 5;
-        int durasi = 5;
-        int studio = 6;
-
-        for (Film film : daftarFilm) {
-            id = Math.max(
-                id,
-                String.valueOf(film.getId()).length()
-            );
-
-            judul = Math.max(
-                judul,
-                film.getJudul().length()
-            );
-
-            genre = Math.max(
-                genre,
-                film.getGenre().length()
-            );
-
-            durasi = Math.max(
-                durasi,
-                String.valueOf(film.getDurasi()).length()
-            );
-
-            studio = Math.max(
-                studio,
-                film.getStudio().length()
-            );
+        for (FilmTayang film : daftarFilm) {
+            lebarId     = Math.max(lebarId,     String.valueOf(film.getId()).length());
+            lebarJudul  = Math.max(lebarJudul,  film.getJudul().length());
+            lebarGenre  = Math.max(lebarGenre,  film.getGenre().length());
+            lebarDurasi = Math.max(lebarDurasi, String.valueOf(film.getDurasi()).length());
+            lebarStudio = Math.max(lebarStudio, film.getStudio().length());
+            lebarUsia   = Math.max(lebarUsia,   film.getKlasifikasiUsia().length());
+            lebarHarga  = Math.max(lebarHarga,  String.valueOf(film.getHargaTiket()).length());
+            lebarJam    = Math.max(lebarJam,    film.getJamTayang().length());
+            lebarStatus = Math.max(lebarStatus, film.getStatusTayang().length());
         }
 
-        return new int[]{id, judul, genre, durasi, studio};
+        return new int[]{lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio, lebarUsia, lebarHarga, lebarJam, lebarStatus};
     }
 
-    // fungsi untuk menampilkan semua film
-    static void tampilkanSemua(List<Film> daftarFilm) {
+    // FUNGSI MEMBUAT GARIS TABEL
+    static void garis(int[] w) {
+        System.out.print("+");
+        for (int i = 0; i < w.length; i++) {
+            System.out.print("-".repeat(w[i] + 2) + "+");
+        }
+        System.out.println();
+    }
+
+    // FUNGSI FORMAT STRING (left/right align)
+    static String padRight(String s, int n) {
+        return String.format("%-" + n + "s", s);
+    }
+
+    static String padLeft(String s, int n) {
+        return String.format("%" + n + "s", s);
+    }
+
+    // FUNGSI HEADER TABEL
+    static void cetakHeader(int[] w) {
+        garis(w);
+        System.out.printf("| %s | %s | %s | %s | %s | %s | %s | %s | %s |%n",
+            padRight("ID",     w[0]),
+            padRight("JUDUL",  w[1]),
+            padRight("GENRE",  w[2]),
+            padRight("MENIT",  w[3]),
+            padRight("STUDIO", w[4]),
+            padRight("USIA",   w[5]),
+            padRight("HARGA",  w[6]),
+            padRight("JAM",    w[7]),
+            padRight("STATUS", w[8])
+        );
+        garis(w);
+    }
+
+    // FUNGSI MENCETAK SATU BARIS FILM
+    static void cetakBaris(FilmTayang film, int[] w) {
+        System.out.printf("| %s | %s | %s | %s | %s | %s | %s | %s | %s |%n",
+            padLeft(String.valueOf(film.getId()),            w[0]),
+            padRight(film.getJudul(),                        w[1]),
+            padRight(film.getGenre(),                        w[2]),
+            padLeft(String.valueOf(film.getDurasi()),        w[3]),
+            padRight(film.getStudio(),                       w[4]),
+            padRight(film.getKlasifikasiUsia(),              w[5]),
+            padLeft(String.valueOf(film.getHargaTiket()),    w[6]),
+            padRight(film.getJamTayang(),                    w[7]),
+            padRight(film.getStatusTayang(),                 w[8])
+        );
+    }
+
+    // FUNGSI MENAMPILKAN SEMUA FILM
+    static void tampilkanSemua(List<FilmTayang> daftarFilm) {
         if (daftarFilm.isEmpty()) {
             System.out.println("Belum ada film yang tersimpan.\n");
             return;
         }
 
-        int[] lebar = hitungLebar(daftarFilm);
+        int[] w = hitungLebar(daftarFilm);
+        cetakHeader(w);
 
-        cetakHeader(
-            lebar[0],
-            lebar[1],
-            lebar[2],
-            lebar[3],
-            lebar[4]
-        );
-
-        for (Film film : daftarFilm) {
-            cetakBaris(
-                film,
-                lebar[0],
-                lebar[1],
-                lebar[2],
-                lebar[3],
-                lebar[4]
-            );
+        for (FilmTayang film : daftarFilm) {
+            cetakBaris(film, w);
         }
 
-        garis(
-            lebar[0],
-            lebar[1],
-            lebar[2],
-            lebar[3],
-            lebar[4]
-        );
-
-        System.out.println(
-            daftarFilm.size() + " film ditampilkan.\n"
-        );
+        garis(w);
+        System.out.println(daftarFilm.size() + " film ditampilkan.\n");
     }
 
-    // fungsi untuk menampilkan satu film
-    static void tampilkanSatu(Film film) {
-        List<Film> hasil = new ArrayList<>();
-        hasil.add(film);
-
-        int[] lebar = hitungLebar(hasil);
-
-        cetakHeader(
-            lebar[0],
-            lebar[1],
-            lebar[2],
-            lebar[3],
-            lebar[4]
-        );
-
-        cetakBaris(
-            film,
-            lebar[0],
-            lebar[1],
-            lebar[2],
-            lebar[3],
-            lebar[4]
-        );
-
-        garis(
-            lebar[0],
-            lebar[1],
-            lebar[2],
-            lebar[3],
-            lebar[4]
-        );
-    }
-
-    // fungsi panduan
+    // FUNGSI PANDUAN
     static void panduan() {
-        System.out.println(
-            "\n+================== PUSAT BANTUAN BIOSKOP ==================+\n" +
-            "|Teks judul, genre, dan studio wajib diapit tanda petik.    |\n" +
-            "|                                                           |\n" +
-            "|1. TAMBAH <id> \"judul\" \"genre\" <durasi> \"studio\"           |\n" +
-            "|2. UBAH <id> \"judul\" \"genre\" <durasi> \"studio\"             |\n" +
-            "|3. HAPUS <id>                                              |\n" +
-            "|4. CARI <id>                                               |\n" +
-            "|5. DAFTAR                                                  |\n" +
-            "|6. BANTUAN                                                 |\n" +
-            "|7. KELUAR                                                  |\n" +
-            "|                                                           |\n" +
-            "|Contoh: TAMBAH 101 \"Laskar Pelangi\" \"Drama\" 125 \"Studio 2\" |\n" +
-            "+===========================================================+\n"
-        );
+        System.out.println("\n+==========================================================+");
+        System.out.println("|                   PUSAT BANTUAN BIOSKOP                  |");
+        System.out.println("+==========================================================+");
+        System.out.println("| Teks wajib diapit tanda petik.                           |");
+        System.out.println("| 1. INSERT <id> \"judul\" \"genre\" <durasi> \"studio\"         |");
+        System.out.println("|    \"usia\" <harga> \"jam\" \"status\"                         |");
+        System.out.println("| 2. SHOW                                                  |");
+        System.out.println("| 3. HELP                                                  |");
+        System.out.println("| 4. EXIT                                                  |");
+        System.out.println("|                                                          |");
+        System.out.println("| Contoh:                                                  |");
+        System.out.println("| INSERT 106 \"Avengers\" \"Action\" 143 \"Studio 1\"            |");
+        System.out.println("| \"13+\" 50000 \"19:00\" \"Tersedia\"                           |");
+        System.out.println("+==========================================================+\n");
     }
 
-    // fungsi delay
+    // FUNGSI DELAY
     static void delay() {
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        try { Thread.sleep(300); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 
-    // fungsi outro
+    // FUNGSI OUTRO
     static void outro() {
-        System.out.println("\n+------------------------------------------+");
+        System.out.println("\n+---------------------------------------------+");
         delay();
-        System.out.println("|  Terima kasih telah memakai layanan     |");
+        System.out.println("|      Terima kasih telah memakai layanan     |");
         delay();
-        System.out.println("|  pendataan film bioskop.                |");
+        System.out.println("|           pendataan film bioskop.           |");
         delay();
-        System.out.println("|       Sampai bertemu di pemutaran       |");
+        System.out.println("|         Sampai bertemu di pemutaran         |");
         delay();
-        System.out.println("|             film berikutnya!            |");
+        System.out.println("|               film berikutnya!              |");
         delay();
-        System.out.println("+------------------------------------------+");
+        System.out.println("+---------------------------------------------+");
     }
 
+    // FUNGSI MEMBACA TEKS DI DALAM TANDA PETIK dari string
+    static String bacaTeks(Scanner sc) {
+        String token = sc.next();
+        if (!token.startsWith("\"")) return null;
+
+        StringBuilder sb = new StringBuilder(token.substring(1));
+        if (sb.toString().endsWith("\"")) {
+            // kata tunggal dalam petik
+            return sb.substring(0, sb.length() - 1);
+        }
+
+        // baca lanjutan sampai ketemu penutup petik
+        while (sc.hasNext()) {
+            String next = sc.next();
+            sb.append(" ").append(next);
+            if (next.endsWith("\"")) {
+                return sb.substring(0, sb.length() - 1);
+            }
+        }
+        return null;
+    }
+
+    // FUNGSI UTAMA
     public static void main(String[] args) {
+        List<FilmTayang> daftarFilm = new ArrayList<>();
 
-        List<Film> daftarFilm = new ArrayList<>();
-        Scanner input = new Scanner(System.in);
+        // 5 OBJEK AWAL SEBELUM INPUT USER
+        daftarFilm.add(new FilmTayang(101, "Laskar Pelangi",   "Drama",   125, "Studio 1", "SU",  40000, "13:00", "Tersedia"));
+        daftarFilm.add(new FilmTayang(102, "Avengers",          "Action",  143, "Studio 2", "13+", 50000, "15:30", "Tersedia"));
+        daftarFilm.add(new FilmTayang(103, "KKN Desa Penari",  "Horror",  116, "Studio 3", "17+", 45000, "19:00", "Tersedia"));
+        daftarFilm.add(new FilmTayang(104, "Inside Out 2",     "Animasi",  96, "Studio 1", "SU",  35000, "10:00", "Tersedia"));
+        daftarFilm.add(new FilmTayang(105, "The Batman",       "Action",  176, "Studio 4", "13+", 55000, "20:00", "Penuh"));
 
-        System.out.println(
-            "==========================================\n" +
-            "      SISTEM PENDATAAN FILM BIOSKOP       \n" +
-            "==========================================\n" +
-            "Ketik BANTUAN untuk melihat format perintah.\n"
-        );
+        System.out.println("==========================================");
+        System.out.println("      SISTEM PENDATAAN FILM BIOSKOP       ");
+        System.out.println("==========================================");
+        System.out.println("5 film awal telah dimasukkan ke sistem.");
+        System.out.println("Ketik HELP untuk melihat format perintah.\n");
 
+        Scanner sc = new Scanner(System.in);
         String perintah = "";
 
         do {
             System.out.print("bioskop> ");
+            if (!sc.hasNextLine()) break;
 
-            String baris = input.nextLine().trim();
+            String baris = sc.nextLine().trim();
+            if (baris.isEmpty()) continue;
 
-            if (baris.isEmpty()) {
-                continue;
-            }
+            // ambil perintah pertama
+            String[] parts = baris.split("\\s+", 2);
+            perintah = parts[0].toUpperCase();
 
-            String[] bagian = baris.split(" ", 2);
-            perintah = bagian[0].toUpperCase();
-
-            try {
-
-                if (perintah.equals("TAMBAH")) {
-
-                    String data = bagian.length > 1 ? bagian[1] : "";
-
-                    String[] hasil = data.split(
-                        "\"([^\"]*)\""
-                    );
-
-                    // parsing menggunakan regex
-                    java.util.regex.Matcher matcher =
-                        java.util.regex.Pattern.compile(
-                            "^(\\d+)\\s+\"([^\"]*)\"\\s+\"([^\"]*)\"\\s+(\\d+)\\s+\"([^\"]*)\"$"
-                        ).matcher(data);
-
-                    if (!matcher.matches()) {
-                        System.out.println(
-                            "Format tambah belum sesuai. Ketik BANTUAN.\n"
-                        );
-                        continue;
-                    }
-
-                    int id = Integer.parseInt(matcher.group(1));
-                    String judul = matcher.group(2);
-                    String genre = matcher.group(3);
-                    int durasi = Integer.parseInt(matcher.group(4));
-                    String studio = matcher.group(5);
-
-                    if (cariIndex(daftarFilm, id) != -1) {
-                        System.out.println(
-                            "ID " + id + " sudah terpakai.\n"
-                        );
-                    } else {
-                        Film film = new Film();
-
-                        film.setId(id);
-                        film.setJudul(judul);
-                        film.setGenre(genre);
-                        film.setDurasi(durasi);
-                        film.setStudio(studio);
-
-                        daftarFilm.add(film);
-
-                        System.out.println(
-                            "Film \"" + judul +
-                            "\" berhasil dicatat.\n"
-                        );
-                    }
-
-                } else if (perintah.equals("UBAH")) {
-
-                    String data = bagian.length > 1 ? bagian[1] : "";
-
-                    java.util.regex.Matcher matcher =
-                        java.util.regex.Pattern.compile(
-                            "^(\\d+)\\s+\"([^\"]*)\"\\s+\"([^\"]*)\"\\s+(\\d+)\\s+\"([^\"]*)\"$"
-                        ).matcher(data);
-
-                    if (!matcher.matches()) {
-                        System.out.println(
-                            "Format ubah belum sesuai. Ketik BANTUAN.\n"
-                        );
-                        continue;
-                    }
-
-                    int id = Integer.parseInt(matcher.group(1));
-                    String judul = matcher.group(2);
-                    String genre = matcher.group(3);
-                    int durasi = Integer.parseInt(matcher.group(4));
-                    String studio = matcher.group(5);
-
-                    int index = cariIndex(daftarFilm, id);
-
-                    if (index == -1) {
-                        System.out.println(
-                            "Tidak ada film dengan ID " +
-                            id + ".\n"
-                        );
-                    } else {
-                        Film film = daftarFilm.get(index);
-
-                        film.setJudul(judul);
-                        film.setGenre(genre);
-                        film.setDurasi(durasi);
-                        film.setStudio(studio);
-
-                        System.out.println(
-                            "Data film ID " + id +
-                            " telah diperbarui.\n"
-                        );
-                    }
-
-                } else if (perintah.equals("HAPUS")) {
-
-                    if (bagian.length < 2) {
-                        System.out.println(
-                            "Masukkan ID yang valid.\n"
-                        );
-                        continue;
-                    }
-
-                    int id = Integer.parseInt(
-                        bagian[1].trim()
-                    );
-
-                    int index = cariIndex(daftarFilm, id);
-
-                    if (index == -1) {
-                        System.out.println(
-                            "Tidak ada film dengan ID " +
-                            id + ".\n"
-                        );
-                    } else {
-                        daftarFilm.remove(index);
-
-                        System.out.println(
-                            "Data film ID " + id +
-                            " telah dihapus.\n"
-                        );
-                    }
-
-                } else if (perintah.equals("CARI")) {
-
-                    if (bagian.length < 2) {
-                        System.out.println(
-                            "Masukkan ID yang valid.\n"
-                        );
-                        continue;
-                    }
-
-                    int id = Integer.parseInt(
-                        bagian[1].trim()
-                    );
-
-                    int index = cariIndex(daftarFilm, id);
-
-                    if (index == -1) {
-                        System.out.println(
-                            "Film dengan ID " + id +
-                            " tidak ditemukan.\n"
-                        );
-                    } else {
-                        tampilkanSatu(
-                            daftarFilm.get(index)
-                        );
-
-                        System.out.println();
-                    }
-
-                } else if (perintah.equals("DAFTAR")) {
-
-                    tampilkanSemua(daftarFilm);
-
-                } else if (perintah.equals("BANTUAN")) {
-
-                    panduan();
-
-                } else if (!perintah.equals("KELUAR")) {
-
-                    System.out.println(
-                        "Perintah tidak dikenali. Ketik BANTUAN untuk melihat pilihan.\n"
-                    );
+            // PERINTAH INSERT
+            if (perintah.equals("INSERT")) {
+                if (parts.length < 2) {
+                    System.out.println("Format tambah belum sesuai. Ketik HELP.\n");
+                    continue;
                 }
 
-            } catch (Exception e) {
+                try {
+                    Scanner lineSc = new Scanner(parts[1]);
 
-                System.out.println(
-                    "Format input belum sesuai. Ketik BANTUAN.\n"
-                );
+                    int id = lineSc.nextInt();
+                    String judul = bacaTeks(lineSc);
+                    String genre = bacaTeks(lineSc);
+                    int durasi = lineSc.nextInt();
+                    String studio = bacaTeks(lineSc);
+                    String klasifikasiUsia = bacaTeks(lineSc);
+                    int hargaTiket = lineSc.nextInt();
+                    String jamTayang = bacaTeks(lineSc);
+                    String statusTayang = bacaTeks(lineSc);
+
+                    if (judul == null || genre == null || studio == null
+                            || klasifikasiUsia == null || jamTayang == null || statusTayang == null) {
+                        System.out.println("Format tambah belum sesuai. Ketik HELP.\n");
+                        continue;
+                    }
+
+                    if (idSudahAda(daftarFilm, id)) {
+                        System.out.println("ID " + id + " sudah terpakai.\n");
+                        continue;
+                    }
+
+                    daftarFilm.add(new FilmTayang(id, judul, genre, durasi, studio, klasifikasiUsia, hargaTiket, jamTayang, statusTayang));
+                    System.out.println("Film \"" + judul + "\" berhasil ditambahkan.\n");
+
+                } catch (Exception e) {
+                    System.out.println("Format tambah belum sesuai. Ketik HELP.\n");
+                }
+
+            // PERINTAH SHOW
+            } else if (perintah.equals("SHOW")) {
+                tampilkanSemua(daftarFilm);
+
+            // PERINTAH HELP
+            } else if (perintah.equals("HELP")) {
+                panduan();
+
+            // PERINTAH EXIT
+            } else if (!perintah.equals("EXIT")) {
+                System.out.println("Perintah tidak dikenali. Ketik HELP.\n");
             }
 
-        } while (!perintah.equals("KELUAR"));
-
-        input.close();
+        } while (!perintah.equals("EXIT"));
 
         outro();
+        sc.close();
     }
 }

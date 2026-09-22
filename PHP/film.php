@@ -1,35 +1,25 @@
 <?php
-class Film {
-    private $id;
-    private $judul;
-    private $genre;
-    private $durasi;
-    private $studio;
-    private $gambar;
 
-    // constructor (initializer)
-    public function __construct() {
-        $this->id = 0;
-        $this->judul = "";
-        $this->genre = "";
-        $this->studio = "";
-        $this->durasi = 0;
-        $this->gambar = "";
+// class cinema film
+class Film {
+    private int $id;
+    private string $judul;
+    private string $genre;
+
+    // Constructor default / berparameter
+    public function __construct(int $id = 0, string $judul = "", string $genre = "") {
+        $this->id    = $id;
+        $this->judul = $judul;
+        $this->genre = $genre;
     }
 
-    // Getter methods
-    public function getId() { return $this->id; }
-    public function getJudul() { return $this->judul; }
-    public function getGenre() { return $this->genre; }
-    public function getDurasi() { return $this->durasi; }
-    public function getStudio() { return $this->studio; }
-    public function getGambar() { return $this->gambar; }
+    // Getter
+    public function getId(): int      { return $this->id; }
+    public function getJudul(): string { return $this->judul; }
+    public function getGenre(): string { return $this->genre; }
 
-    // Setter methods
-    public function setId($nilai) { $this->id = $nilai; }
-    public function setJudul($nilai) { $this->judul = $nilai; }
-    public function setGenre($nilai) { $this->genre = $nilai; }
-    public function setDurasi($nilai) { $this->durasi = $nilai; }
-    public function setStudio($nilai) { $this->studio = $nilai; }
-    public function setGambar($nilai) { $this->gambar = $nilai; }
+    // Setter
+    public function setId(int $id): void           { $this->id = $id; }
+    public function setJudul(string $judul): void  { $this->judul = $judul; }
+    public function setGenre(string $genre): void  { $this->genre = $genre; }
 }

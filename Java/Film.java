@@ -1,58 +1,30 @@
+// class cinema film
 public class Film {
     private int id;
     private String judul;
     private String genre;
-    private String studio;
-    private int durasi;
 
-    // constructor
+    // Constructor default
     public Film() {
-        id = 0;
-        judul = "";
-        genre = "";
-        studio = "";
-        durasi = 0;
+        this.id = 0;
+        this.judul = "";
+        this.genre = "";
     }
 
-    // getter
-    public int getId() {
-        return id;
+    // Constructor berparameter
+    public Film(int id, String judul, String genre) {
+        this.id = id;
+        this.judul = judul;
+        this.genre = genre;
     }
 
-    public String getJudul() {
-        return judul;
-    }
+    // Getter
+    public int getId() { return id; }
+    public String getJudul() { return judul; }
+    public String getGenre() { return genre; }
 
-    public String getGenre() {
-        return genre;
-    }
-
-    public int getDurasi() {
-        return durasi;
-    }
-
-    public String getStudio() {
-        return studio;
-    }
-
-    // setter
-    public void setId(int nilai) {
-        id = nilai;
-    }
-
-    public void setJudul(String nilai) {
-        judul = nilai;
-    }
-
-    public void setGenre(String nilai) {
-        genre = nilai;
-    }
-
-    public void setDurasi(int nilai) {
-        durasi = nilai;
-    }
-
-    public void setStudio(String nilai) {
-        studio = nilai;
-    }
+    // Setter
+    public void setId(int id) { this.id = id; }
+    public void setJudul(String judul) { this.judul = judul; }
+    public void setGenre(String genre) { this.genre = genre; }
 }

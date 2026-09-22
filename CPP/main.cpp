@@ -1,242 +1,401 @@
 #include <algorithm>
-#include <cctype>
 #include <chrono>
-#include <thread>
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <string>
+#include <thread>
 #include <vector>
-#include "film.cpp"
+
+#include "FilmTayang.cpp"
+
 using namespace std;
 
-// fungsi untuk mencari indeks film berdasarkan ID menggunakan vector<Film>
-int cariIndex(vector<Film>& daftarFilm, int id) {
-    for (int i = 0; i < static_cast<int>(daftarFilm.size()); i++) {
-        if (daftarFilm[i].getId() == id) return i;
-    }
-    return -1;
-}
-
-// fungsi untuk membaca teks yang diapit tanda petik
+// FUNGSI MEMBACA TEKS DI DALAM TANDA PETIK
 bool bacaTeks(string& teks) {
     cin >> ws;
-    if (cin.peek() != '"') return false;
+
+    if (cin.peek() != '"') {
+        return false;
+    }
+
     cin.get();
     getline(cin, teks, '"');
+
     return true;
 }
 
-// fungsi untuk mencetak garis horizontal
-void garis(int id, int judul, int genre, int durasi, int studio) {
-    cout << '+' << string(id + 2, '-')
-         << '+' << string(judul + 2, '-')
-         << '+' << string(genre + 2, '-')
-         << '+' << string(durasi + 2, '-')
-         << '+' << string(studio + 2, '-') << "+\n";
+
+// FUNGSI MENCARI ID FILM
+bool idSudahAda(const vector<FilmTayang>& daftarFilm, int id) {
+    for (const FilmTayang& film : daftarFilm) {
+        if (film.getId() == id) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
-// fungsi untuk mencetak header tabel
-void cetakHeader(int id, int judul, int genre, int durasi, int studio) {
-    garis(id, judul, genre, durasi, studio);
-    cout << "| " << left << setw(id) << "ID"
-         << " | " << setw(judul) << "JUDUL FILM"
-         << " | " << setw(genre) << "GENRE"
-         << " | " << setw(durasi) << "MENIT"
-         << " | " << setw(studio) << "STUDIO" << " |\n";
-    garis(id, judul, genre, durasi, studio);
+
+// FUNGSI MEMBACA SATU DATA FILM DARI INPUT
+bool bacaDataFilm(int& id, string& judul, string& genre, int& durasi, string& studio, string& klasifikasiUsia, int& hargaTiket, string& jamTayang, string& statusTayang) {
+    if (!(cin >> id)) {
+        return false;
+    }
+
+    if (!bacaTeks(judul)) return false;
+    if (!bacaTeks(genre)) return false;
+
+    if (!(cin >> durasi)) return false;
+
+    if (!bacaTeks(studio)) return false;
+    if (!bacaTeks(klasifikasiUsia)) return false;
+
+    if (!(cin >> hargaTiket)) return false;
+
+    if (!bacaTeks(jamTayang)) return false;
+    if (!bacaTeks(statusTayang)) return false;
+
+    return true;
 }
 
-// fungsi untuk mencetak satu baris data film
-void cetakBaris(Film film, int id, int judul, int genre, int durasi, int studio) {
-    cout << "| " << right << setw(id) << film.getId()
-         << " | " << left << setw(judul) << film.getJudul()
-         << " | " << setw(genre) << film.getGenre()
-         << " | " << right << setw(durasi) << film.getDurasi()
-         << " | " << left << setw(studio) << film.getStudio() << " |\n";
-}
+// FUNGSI MENGHITUNG LEBAR KOLOM
+void hitungLebar(const vector<FilmTayang>& daftarFilm,int& lebarId,int& lebarJudul,int& lebarGenre,int& lebarDurasi,int& lebarStudio,int& lebarUsia,int& lebarHarga,int& lebarJam,int& lebarStatus) {
+    lebarId = 2;
+    lebarJudul = 10;
+    lebarGenre = 5;
+    lebarDurasi = 6;
+    lebarStudio = 6;
+    lebarUsia = 10;
+    lebarHarga = 11;
+    lebarJam = 8;
+    lebarStatus = 10;
 
-// fungsi untuk menghitung lebar kolom berdasarkan data film
-void hitungLebar(vector<Film>& daftarFilm, int& id, int& judul, int& genre, int& durasi, int& studio) {
-    id = 2; judul = 10; genre = 5; durasi = 5; studio = 6;
-    for (Film& film : daftarFilm) {
-        id = max(id, static_cast<int>(to_string(film.getId()).length()));
-        judul = max(judul, static_cast<int>(film.getJudul().length()));
-        genre = max(genre, static_cast<int>(film.getGenre().length()));
-        durasi = max(durasi, static_cast<int>(to_string(film.getDurasi()).length()));
-        studio = max(studio, static_cast<int>(film.getStudio().length()));
+    for (const FilmTayang& film : daftarFilm) {
+        lebarId = max(
+            lebarId,
+            static_cast<int>(
+                to_string(film.getId()).length()
+            )
+        );
+
+        lebarJudul = max(
+            lebarJudul,
+            static_cast<int>(film.getJudul().length())
+        );
+
+        lebarGenre = max(
+            lebarGenre,
+            static_cast<int>(film.getGenre().length())
+        );
+
+        lebarDurasi = max(
+            lebarDurasi,
+            static_cast<int>(
+                to_string(film.getDurasi()).length()
+            )
+        );
+
+        lebarStudio = max(
+            lebarStudio,
+            static_cast<int>(film.getStudio().length())
+        );
+
+        lebarUsia = max(
+            lebarUsia,
+            static_cast<int>(
+                film.getKlasifikasiUsia().length()
+            )
+        );
+
+        lebarHarga = max(
+            lebarHarga,
+            static_cast<int>(
+                to_string(film.getHargaTiket()).length()
+            )
+        );
+
+        lebarJam = max(
+            lebarJam,
+            static_cast<int>(film.getJamTayang().length())
+        );
+
+        lebarStatus = max(
+            lebarStatus,
+            static_cast<int>(film.getStatusTayang().length())
+        );
     }
 }
 
-// fungsi untuk menampilkan semua film dalam daftar
-void tampilkanSemua(vector<Film>& daftarFilm) {
+// FUNGSI MEMBUAT GARIS TABEL
+void garis(int id,int judul,int genre,int durasi,int studio,int usia,int harga,int jam,int status) {
+    cout << '+'
+         << string(id + 2, '-') << '+'
+         << string(judul + 2, '-') << '+'
+         << string(genre + 2, '-') << '+'
+         << string(durasi + 2, '-') << '+'
+         << string(studio + 2, '-') << '+'
+         << string(usia + 2, '-') << '+'
+         << string(harga + 2, '-') << '+'
+         << string(jam + 2, '-') << '+'
+         << string(status + 2, '-') << "+\n";
+}
+
+// FUNGSI HEADER TABEL
+void cetakHeader(int id,int judul,int genre,int durasi,int studio,int usia,int harga,int jam,int status) {
+    garis(id, judul, genre, durasi, studio, usia, harga, jam, status);
+
+    cout << "| " << left << setw(id) << "ID"
+         << " | " << setw(judul) << "JUDUL"
+         << " | " << setw(genre) << "GENRE"
+         << " | " << setw(durasi) << "MENIT"
+         << " | " << setw(studio) << "STUDIO"
+         << " | " << setw(usia) << "USIA"
+         << " | " << setw(harga) << "HARGA"
+         << " | " << setw(jam) << "JAM"
+         << " | " << setw(status) << "STATUS"
+         << " |\n";
+
+    garis(id, judul, genre, durasi, studio, usia, harga, jam, status);
+}
+
+// FUNGSI MENCETAK SATU BARIS FILM
+void cetakBaris(const FilmTayang& film,int id,int judul,int genre,int durasi,int studio,int usia,int harga,int jam,int status) {
+    cout << "| " << right << setw(id)
+         << film.getId()
+
+         << " | " << left << setw(judul)
+         << film.getJudul()
+
+         << " | " << setw(genre)
+         << film.getGenre()
+
+         << " | " << right << setw(durasi)
+         << film.getDurasi()
+
+         << " | " << left << setw(studio)
+         << film.getStudio()
+
+         << " | " << setw(usia)
+         << film.getKlasifikasiUsia()
+
+         << " | " << right << setw(harga)
+         << film.getHargaTiket()
+
+         << " | " << left << setw(jam)
+         << film.getJamTayang()
+
+         << " | " << setw(status)
+         << film.getStatusTayang()
+
+         << " |\n";
+}
+
+// FUNGSI MENAMPILKAN SEMUA FILM
+void tampilkanSemua(const vector<FilmTayang>& daftarFilm) {
     if (daftarFilm.empty()) {
         cout << "Belum ada film yang tersimpan.\n\n";
         return;
     }
 
-    int lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio;
-    hitungLebar(daftarFilm, lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio);
-    cetakHeader(lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio);
-    for (const Film& film : daftarFilm) {
-        cetakBaris(film, lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio);
+    int id, judul, genre, durasi;
+    int studio, usia, harga, jam, status;
+
+    hitungLebar(daftarFilm,id, judul, genre, durasi,studio, usia, harga, jam, status);
+
+    cetakHeader(id, judul, genre, durasi,studio, usia, harga, jam, status);
+
+    for (const FilmTayang& film : daftarFilm) {
+        cetakBaris(film,id, judul, genre, durasi,studio, usia, harga, jam, status);
     }
-    garis(lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio);
+
+    garis(id, judul, genre, durasi,studio, usia, harga, jam, status);
+
     cout << daftarFilm.size() << " film ditampilkan.\n\n";
 }
 
-// fungsi untuk menampilkan satu film
-void tampilkanSatu(const Film& film) {
-    vector<Film> hasil = {film};
-    int lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio;
-    hitungLebar(hasil, lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio);
-    cetakHeader(lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio);
-    cetakBaris(film, lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio);
-    garis(lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio);
-}
-
-// fungsi untuk menampilkan panduan penggunaan
+// FUNGSI PANDUAN
 void panduan() {
-    cout << "\n+================== PUSAT BANTUAN BIOSKOP ==================+\n"
-         << "|Teks judul, genre, dan studio wajib diapit tanda petik.    |\n"
-         << "|                                                           |\n"
-         << "|1. TAMBAH <id> \"judul\" \"genre\" <durasi> \"studio\"           |\n"
-         << "|2. UBAH <id> \"judul\" \"genre\" <durasi> \"studio\"             |\n"
-         << "|3. HAPUS <id>                                              |\n"
-         << "|4. CARI <id>                                               |\n"
-         << "|5. DAFTAR                                                  |\n"
-         << "|6. BANTUAN                                                 |\n"
-         << "|7. KELUAR                                                  |\n"
-         << "|                                                           |\n"
-         << "|Contoh: TAMBAH 101 \"Laskar Pelangi\" \"Drama\" 125 \"Studio 2\" |\n"
-         << "+===========================================================+\n\n";
+    cout << "\n+==========================================================+\n"
+         << "|                   PUSAT BANTUAN BIOSKOP                  |\n"
+         << "+==========================================================+\n"
+         << "| Teks wajib diapit tanda petik.                           |\n"
+         << "| 1. INSERT <id> \"judul\" \"genre\" <durasi> \"studio\"         |\n"
+         << "|    \"usia\" <harga> \"jam\" \"status\"                         |\n"
+         << "| 2. SHOW                                                  |\n"
+         << "| 3. HELP                                                  |\n"
+         << "| 4. EXIT                                                  |\n"
+         << "|                                                          |\n"
+         << "| Contoh:                                                  |\n"
+         << "| INSERT 106 \"Avengers\" \"Action\" 143 \"Studio 1\"            |\n"
+         << "| \"13+\" 50000 \"19:00\" \"Tersedia\"                           |\n"
+         << "+==========================================================+\n\n";
 }
 
-//fungsi delay
+// FUNGSI DELAY DAN OUTRO
 void delay() {
-    this_thread::sleep_for(chrono::milliseconds(400));
+    this_thread::sleep_for(chrono::milliseconds(300));
 }
 
-//fungsi untuk menampilkan tampilan keluar dari program
 void outro() {
-    cout << "\n+------------------------------------------+\n";
+    cout << "\n+---------------------------------------------+\n";
     delay();
-    cout << "|  Terima kasih telah memakai layanan     |\n";
+    cout << "|      Terima kasih telah memakai layanan     |\n";
     delay();
-    cout << "|  pendataan film bioskop.                |\n";
+    cout << "|           pendataan film bioskop.           |\n";
     delay();
-    cout << "|       Sampai bertemu di pemutaran       |\n";
+    cout << "|         Sampai bertemu di pemutaran         |\n";
     delay();
-    cout << "|             film berikutnya!            |\n";
+    cout << "|               film berikutnya!              |\n";
     delay();
-    cout << "+------------------------------------------+\n";
+    cout << "+---------------------------------------------+\n";
 }
 
-// fungsi utama
+// FUNGSI UTAMA
 int main() {
-    // deklarasi variabel
-    vector<Film> daftarFilm;
+    vector<FilmTayang> daftarFilm;
+
     string perintah;
 
-    // menampilkan judul program
+    // 5 OBJEK AWAL SEBELUM INPUT USER
+    FilmTayang film1(
+        101,
+        "Laskar Pelangi",
+        "Drama",
+        125,
+        "Studio 1",
+        "SU",
+        40000,
+        "13:00",
+        "Tersedia"
+    );
+
+    FilmTayang film2(
+        102,
+        "Avengers",
+        "Action",
+        143,
+        "Studio 2",
+        "13+",
+        50000,
+        "15:30",
+        "Tersedia"
+    );
+
+    FilmTayang film3(
+        103,
+        "KKN Desa Penari",
+        "Horror",
+        116,
+        "Studio 3",
+        "17+",
+        45000,
+        "19:00",
+        "Tersedia"
+    );
+
+    FilmTayang film4(
+        104,
+        "Inside Out 2",
+        "Animasi",
+        96,
+        "Studio 1",
+        "SU",
+        35000,
+        "10:00",
+        "Tersedia"
+    );
+
+    FilmTayang film5(
+        105,
+        "The Batman",
+        "Action",
+        176,
+        "Studio 4",
+        "13+",
+        55000,
+        "20:00",
+        "Penuh"
+    );
+
+    // Memasukkan 5 objek ke vector
+    daftarFilm.push_back(film1);
+    daftarFilm.push_back(film2);
+    daftarFilm.push_back(film3);
+    daftarFilm.push_back(film4);
+    daftarFilm.push_back(film5);
+
+    // TAMPILAN AWAL
     cout << "==========================================\n"
          << "      SISTEM PENDATAAN FILM BIOSKOP       \n"
          << "==========================================\n"
-         << "Ketik BANTUAN untuk melihat format perintah.\n\n";
+         << "5 film awal telah dimasukkan ke sistem.\n"
+         << "Ketik HELP untuk melihat format perintah.\n\n";
 
-    // loop utama untuk menerima perintah dari pengguna sampai perintah KELUAR diterima
+
+    // LOOP PROGRAM
     do {
         cout << "bioskop> ";
         cin >> perintah;
 
-        // jika input gagal, keluar dari loop
-        if (cin.fail()) break;
-
-        // mengubah perintah menjadi huruf besar untuk memudahkan perbandingan
-        transform(perintah.begin(), perintah.end(), perintah.begin(), [](unsigned char c) { return toupper(c); });
-
-        if (perintah == "TAMBAH") { // perintah untuk menambah film baru
-            int id, durasi;
-            string judul, genre, studio;
-            cin >> id;
-            bool judulValid = bacaTeks(judul);
-            bool genreValid = bacaTeks(genre);
-            cin >> durasi;
-            bool studioValid = bacaTeks(studio);
-
-            if (cin.fail() || !judulValid || !genreValid || !studioValid) {
-                cout << "Format tambah belum sesuai. Ketik BANTUAN.\n\n";
-                cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            } else if (cariIndex(daftarFilm, id) != -1) {
-                cout << "ID " << id << " sudah terpakai.\n\n";
-            } else {
-                Film film;
-                film.setId(id);
-                film.setJudul(judul);
-                film.setGenre(genre);
-                film.setDurasi(durasi);
-                film.setStudio(studio);
-                daftarFilm.push_back(film);
-                cout << "Film \"" << judul << "\" berhasil dicatat.\n\n";
-            }
-        } else if (perintah == "UBAH") { // perintah untuk mengubah data film yang sudah ada
-            int id, durasi;
-            string judul, genre, studio;
-            cin >> id;
-            bool judulValid = bacaTeks(judul);
-            bool genreValid = bacaTeks(genre);
-            cin >> durasi;
-            bool studioValid = bacaTeks(studio);
-
-            if (cin.fail() || !judulValid || !genreValid || !studioValid) {
-                cout << "Format ubah belum sesuai. Ketik BANTUAN.\n\n";
-                cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            } else {
-                int index = cariIndex(daftarFilm, id);
-                if (index == -1) cout << "Tidak ada film dengan ID " << id << ".\n\n";
-                else {
-                    daftarFilm[index].setJudul(judul);
-                    daftarFilm[index].setGenre(genre);
-                    daftarFilm[index].setDurasi(durasi);
-                    daftarFilm[index].setStudio(studio);
-                    cout << "Data film ID " << id << " telah diperbarui.\n\n";
-                }
-            }
-        } else if (perintah == "HAPUS") { // perintah untuk menghapus data film
-            int id;
-            cin >> id;
-            if (cin.fail()) {
-                cout << "Masukkan ID yang valid.\n\n";
-                cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            } else {
-                int index = cariIndex(daftarFilm, id);
-                if (index == -1) cout << "Tidak ada film dengan ID " << id << ".\n\n";
-                else {
-                    daftarFilm.erase(daftarFilm.begin() + index);
-                    cout << "Data film ID " << id << " telah dihapus.\n\n";
-                }
-            }
-        } else if (perintah == "CARI") { // perintah untuk mencari film berdasarkan ID
-            int id;
-            cin >> id;
-            if (cin.fail()) {
-                cout << "Masukkan ID yang valid.\n\n";
-                cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            } else {
-                int index = cariIndex(daftarFilm, id);
-                if (index == -1) cout << "Film dengan ID " << id << " tidak ditemukan.\n\n";
-                else { tampilkanSatu(daftarFilm[index]); cout << '\n'; }
-            }
-        } else if (perintah == "DAFTAR") { // perintah untuk menampilkan semua film yang tersimpan
-            tampilkanSemua(daftarFilm);
-        } else if (perintah == "BANTUAN") { // perintah untuk menampilkan panduan penggunaan
-            panduan();
-        } else if (perintah != "KELUAR") { // perintah tidak dikenali
-            cout << "Perintah tidak dikenali. Ketik BANTUAN untuk melihat pilihan.\n\n";
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        if (cin.fail()) {
+            break;
         }
-    } while (perintah != "KELUAR");
+
+        transform(perintah.begin(),perintah.end(),perintah.begin(),[](unsigned char c){return toupper(c);});
+
+        // PERINTAH INSERT
+        if (perintah == "INSERT") {
+            int id, durasi, hargaTiket;
+
+            string judul;
+            string genre;
+            string studio;
+            string klasifikasiUsia;
+            string jamTayang;
+            string statusTayang;
+
+            bool valid = bacaDataFilm(id,judul,genre,durasi,studio,klasifikasiUsia,hargaTiket,jamTayang,statusTayang);
+
+            if (!valid || cin.fail()) {
+                cout << "Format tambah belum sesuai. " << "Ketik HELP.\n\n";
+
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(),'\n');
+            }
+            else if (idSudahAda(daftarFilm, id)) {
+                cout << "ID " << id << " sudah terpakai.\n\n";
+            }
+            else {
+                FilmTayang filmBaru(id,judul,genre,durasi,studio,klasifikasiUsia,hargaTiket,jamTayang,statusTayang);
+
+                daftarFilm.push_back(filmBaru);
+
+                cout << "Film \"" << judul << "\" berhasil ditambahkan.\n\n";
+            }
+        }
+
+        // PERINTAH SHOW
+        else if (perintah == "SHOW") {
+            tampilkanSemua(daftarFilm);
+        }
+
+        // PERINTAH HELP
+        else if (perintah == "HELP") {
+            panduan();
+        }
+
+        // PERINTAH EXIT
+        else if (perintah != "EXIT") {
+            cout << "Perintah tidak dikenali. " << "Ketik HELP.\n\n";
+
+            cin.ignore(numeric_limits<streamsize>::max(),'\n');
+        }
+
+    } while (perintah != "EXIT");
 
     outro();
+
     return 0;
 }

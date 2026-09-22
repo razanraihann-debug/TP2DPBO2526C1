@@ -1,410 +1,260 @@
-import time
 import re
+import sys
+import os
+import time
 
-from film import Film
-
-
-# fungsi untuk mencari indeks film berdasarkan ID
-def cariIndex(daftarFilm, id):
-    for i in range(len(daftarFilm)):
-        if daftarFilm[i].getId() == id:
-            return i
-
-    return -1
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+from FilmTayang import FilmTayang
 
 
-# fungsi untuk membaca teks yang diapit tanda petik
-def bacaTeks(teks):
-    if len(teks) < 2:
-        return False, ""
-
-    if teks[0] != '"' or teks[-1] != '"':
-        return False, ""
-
-    return True, teks[1:-1]
+# FUNGSI MENCARI ID FILM
+def id_sudah_ada(daftar_film, id):
+    for film in daftar_film:
+        if film.getId() == id:
+            return True
+    return False
 
 
-# fungsi untuk mencetak garis horizontal
-def garis(id, judul, genre, durasi, studio):
+# FUNGSI MENGHITUNG LEBAR KOLOM
+def hitung_lebar(daftar_film):
+    lebar = {
+        "id":     2,
+        "judul":  10,
+        "genre":  5,
+        "durasi": 6,
+        "studio": 6,
+        "usia":   10,
+        "harga":  11,
+        "jam":    8,
+        "status": 10,
+    }
+
+    for film in daftar_film:
+        lebar["id"]     = max(lebar["id"],     len(str(film.getId())))
+        lebar["judul"]  = max(lebar["judul"],   len(film.getJudul()))
+        lebar["genre"]  = max(lebar["genre"],   len(film.getGenre()))
+        lebar["durasi"] = max(lebar["durasi"],  len(str(film.getDurasi())))
+        lebar["studio"] = max(lebar["studio"],  len(film.getStudio()))
+        lebar["usia"]   = max(lebar["usia"],    len(film.getKlasifikasiUsia()))
+        lebar["harga"]  = max(lebar["harga"],   len(str(film.getHargaTiket())))
+        lebar["jam"]    = max(lebar["jam"],     len(film.getJamTayang()))
+        lebar["status"] = max(lebar["status"],  len(film.getStatusTayang()))
+
+    return lebar
+
+
+# FUNGSI MEMBUAT GARIS TABEL
+def garis(w):
+    cols = ["id", "judul", "genre", "durasi", "studio", "usia", "harga", "jam", "status"]
+    print("+" + "".join("-" * (w[c] + 2) + "+" for c in cols))
+
+
+# FUNGSI HEADER TABEL
+def cetak_header(w):
+    garis(w)
     print(
-        "+" + "-" * (id + 2) +
-        "+" + "-" * (judul + 2) +
-        "+" + "-" * (genre + 2) +
-        "+" + "-" * (durasi + 2) +
-        "+" + "-" * (studio + 2) +
-        "+"
+        f"| {'ID':<{w['id']}} "
+        f"| {'JUDUL':<{w['judul']}} "
+        f"| {'GENRE':<{w['genre']}} "
+        f"| {'MENIT':<{w['durasi']}} "
+        f"| {'STUDIO':<{w['studio']}} "
+        f"| {'USIA':<{w['usia']}} "
+        f"| {'HARGA':<{w['harga']}} "
+        f"| {'JAM':<{w['jam']}} "
+        f"| {'STATUS':<{w['status']}} |"
+    )
+    garis(w)
+
+
+# FUNGSI MENCETAK SATU BARIS FILM
+def cetak_baris(film, w):
+    print(
+        f"| {film.getId():>{w['id']}} "
+        f"| {film.getJudul():<{w['judul']}} "
+        f"| {film.getGenre():<{w['genre']}} "
+        f"| {film.getDurasi():>{w['durasi']}} "
+        f"| {film.getStudio():<{w['studio']}} "
+        f"| {film.getKlasifikasiUsia():<{w['usia']}} "
+        f"| {film.getHargaTiket():>{w['harga']}} "
+        f"| {film.getJamTayang():<{w['jam']}} "
+        f"| {film.getStatusTayang():<{w['status']}} |"
     )
 
 
-# fungsi untuk mencetak header tabel
-def cetakHeader(id, judul, genre, durasi, studio):
-    garis(id, judul, genre, durasi, studio)
-
-    print(
-        "| " + "ID".ljust(id) +
-        " | " + "JUDUL FILM".ljust(judul) +
-        " | " + "GENRE".ljust(genre) +
-        " | " + "MENIT".rjust(durasi) +
-        " | " + "STUDIO".ljust(studio) +
-        " |"
-    )
-
-    garis(id, judul, genre, durasi, studio)
-
-
-# fungsi untuk mencetak satu baris data film
-def cetakBaris(film, id, judul, genre, durasi, studio):
-    print(
-        "| " + str(film.getId()).rjust(id) +
-        " | " + film.getJudul().ljust(judul) +
-        " | " + film.getGenre().ljust(genre) +
-        " | " + str(film.getDurasi()).rjust(durasi) +
-        " | " + film.getStudio().ljust(studio) +
-        " |"
-    )
-
-
-# fungsi untuk menghitung lebar kolom
-def hitungLebar(daftarFilm):
-    id = 2
-    judul = 10
-    genre = 5
-    durasi = 5
-    studio = 6
-
-    for film in daftarFilm:
-        id = max(
-            id,
-            len(str(film.getId()))
-        )
-
-        judul = max(
-            judul,
-            len(film.getJudul())
-        )
-
-        genre = max(
-            genre,
-            len(film.getGenre())
-        )
-
-        durasi = max(
-            durasi,
-            len(str(film.getDurasi()))
-        )
-
-        studio = max(
-            studio,
-            len(film.getStudio())
-        )
-
-    return id, judul, genre, durasi, studio
-
-
-# fungsi untuk menampilkan semua film
-def tampilkanSemua(daftarFilm):
-    if len(daftarFilm) == 0:
+# FUNGSI MENAMPILKAN SEMUA FILM
+def tampilkan_semua(daftar_film):
+    if not daftar_film:
         print("Belum ada film yang tersimpan.\n")
         return
 
-    lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio = \
-        hitungLebar(daftarFilm)
-
-    cetakHeader(
-        lebarId,
-        lebarJudul,
-        lebarGenre,
-        lebarDurasi,
-        lebarStudio
-    )
-
-    for film in daftarFilm:
-        cetakBaris(
-            film,
-            lebarId,
-            lebarJudul,
-            lebarGenre,
-            lebarDurasi,
-            lebarStudio
-        )
-
-    garis(
-        lebarId,
-        lebarJudul,
-        lebarGenre,
-        lebarDurasi,
-        lebarStudio
-    )
-
-    print(
-        len(daftarFilm),
-        "film ditampilkan.\n"
-    )
+    w = hitung_lebar(daftar_film)
+    cetak_header(w)
+    for film in daftar_film:
+        cetak_baris(film, w)
+    garis(w)
+    print(f"{len(daftar_film)} film ditampilkan.\n")
 
 
-# fungsi untuk menampilkan satu film
-def tampilkanSatu(film):
-    hasil = [film]
-
-    lebarId, lebarJudul, lebarGenre, lebarDurasi, lebarStudio = \
-        hitungLebar(hasil)
-
-    cetakHeader(
-        lebarId,
-        lebarJudul,
-        lebarGenre,
-        lebarDurasi,
-        lebarStudio
-    )
-
-    cetakBaris(
-        film,
-        lebarId,
-        lebarJudul,
-        lebarGenre,
-        lebarDurasi,
-        lebarStudio
-    )
-
-    garis(
-        lebarId,
-        lebarJudul,
-        lebarGenre,
-        lebarDurasi,
-        lebarStudio
-    )
-
-
-# fungsi untuk menampilkan panduan
+# FUNGSI PANDUAN
 def panduan():
-    print(
-        "\n+================== PUSAT BANTUAN BIOSKOP ==================+\n"
-        "|Teks judul, genre, dan studio wajib diapit tanda petik.    |\n"
-        "|                                                           |\n"
-        '|1. TAMBAH <id> "judul" "genre" <durasi> "studio"           |\n'
-        '|2. UBAH <id> "judul" "genre" <durasi> "studio"             |\n'
-        "|3. HAPUS <id>                                              |\n"
-        "|4. CARI <id>                                               |\n"
-        "|5. DAFTAR                                                  |\n"
-        "|6. BANTUAN                                                 |\n"
-        "|7. KELUAR                                                  |\n"
-        "|                                                           |\n"
-        '|Contoh: TAMBAH 101 "Laskar Pelangi" "Drama" 125 "Studio 2" |\n'
-        "+===========================================================+\n"
-    )
+    print("\n+==========================================================+")
+    print("|                   PUSAT BANTUAN BIOSKOP                  |")
+    print("+==========================================================+")
+    print("| Teks wajib diapit tanda petik.                           |")
+    print("| 1. INSERT <id> \"judul\" \"genre\" <durasi> \"studio\"         |")
+    print("|    \"usia\" <harga> \"jam\" \"status\"                         |")
+    print("| 2. SHOW                                                  |")
+    print("| 3. HELP                                                  |")
+    print("| 4. EXIT                                                  |")
+    print("|                                                          |")
+    print("| Contoh:                                                  |")
+    print("| INSERT 106 \"Avengers\" \"Action\" 143 \"Studio 1\"            |")
+    print("| \"13+\" 50000 \"19:00\" \"Tersedia\"                           |")
+    print("+==========================================================+\n")
 
 
-# fungsi delay
+# FUNGSI DELAY
 def delay():
-    time.sleep(0.4)
+    time.sleep(0.3)
 
 
-# fungsi outro
+# FUNGSI OUTRO
 def outro():
-    print("\n+------------------------------------------+")
+    print("\n+---------------------------------------------+")
     delay()
-    print("|  Terima kasih telah memakai layanan     |")
+    print("|      Terima kasih telah memakai layanan     |")
     delay()
-    print("|  pendataan film bioskop.                |")
+    print("|           pendataan film bioskop.           |")
     delay()
-    print("|       Sampai bertemu di pemutaran       |")
+    print("|         Sampai bertemu di pemutaran         |")
     delay()
-    print("|             film berikutnya!            |")
+    print("|               film berikutnya!              |")
     delay()
-    print("+------------------------------------------+")
+    print("+---------------------------------------------+")
 
 
-# fungsi utama
+# FUNGSI MEMBACA TEKS DI DALAM TANDA PETIK
+def baca_teks_dari_token(tokens, idx):
+    """Membaca token bertanda petik, mengembalikan (teks, idx_baru) atau (None, idx) jika gagal."""
+    if idx >= len(tokens):
+        return None, idx
+
+    token = tokens[idx]
+    if not token.startswith('"'):
+        return None, idx
+
+    # kata tunggal: "kata"
+    if token.endswith('"') and len(token) > 1:
+        return token[1:-1], idx + 1
+
+    # multi-kata: "kata kata kata"
+    parts = [token[1:]]
+    idx += 1
+    while idx < len(tokens):
+        part = tokens[idx]
+        idx += 1
+        if part.endswith('"'):
+            parts.append(part[:-1])
+            return " ".join(parts), idx
+        parts.append(part)
+
+    return None, idx
+
+
+# FUNGSI PARSE INPUT INSERT
+def parse_insert(sisa):
+    """Parse argumen INSERT dan kembalikan dict data film atau None jika gagal."""
+    # Tokenisasi dengan mempertahankan string dalam petik
+    tokens = re.findall(r'"[^"]*"|\S+', sisa)
+    idx = 0
+
+    try:
+        id_film = int(tokens[idx]); idx += 1
+        judul, idx = baca_teks_dari_token(tokens, idx)
+        genre, idx = baca_teks_dari_token(tokens, idx)
+        durasi = int(tokens[idx]); idx += 1
+        studio, idx = baca_teks_dari_token(tokens, idx)
+        klasifikasi_usia, idx = baca_teks_dari_token(tokens, idx)
+        harga_tiket = int(tokens[idx]); idx += 1
+        jam_tayang, idx = baca_teks_dari_token(tokens, idx)
+        status_tayang, idx = baca_teks_dari_token(tokens, idx)
+    except (ValueError, IndexError):
+        return None
+
+    if None in (judul, genre, studio, klasifikasi_usia, jam_tayang, status_tayang):
+        return None
+
+    return {
+        "id": id_film, "judul": judul, "genre": genre,
+        "durasi": durasi, "studio": studio, "klasifikasiUsia": klasifikasi_usia,
+        "hargaTiket": harga_tiket, "jamTayang": jam_tayang, "statusTayang": status_tayang,
+    }
+
+
+# FUNGSI UTAMA
 def main():
+    daftar_film = [
+        FilmTayang(101, "Laskar Pelangi",  "Drama",   125, "Studio 1", "SU",  40000, "13:00", "Tersedia"),
+        FilmTayang(102, "Avengers",         "Action",  143, "Studio 2", "13+", 50000, "15:30", "Tersedia"),
+        FilmTayang(103, "KKN Desa Penari", "Horror",  116, "Studio 3", "17+", 45000, "19:00", "Tersedia"),
+        FilmTayang(104, "Inside Out 2",    "Animasi",  96, "Studio 1", "SU",  35000, "10:00", "Tersedia"),
+        FilmTayang(105, "The Batman",      "Action",  176, "Studio 4", "13+", 55000, "20:00", "Penuh"),
+    ]
 
-    daftarFilm = []
+    print("==========================================")
+    print("      SISTEM PENDATAAN FILM BIOSKOP       ")
+    print("==========================================")
+    print("5 film awal telah dimasukkan ke sistem.")
+    print("Ketik HELP untuk melihat format perintah.\n")
+
     perintah = ""
 
-    print(
-        "==========================================\n"
-        "      SISTEM PENDATAAN FILM BIOSKOP       \n"
-        "==========================================\n"
-        "Ketik BANTUAN untuk melihat format perintah.\n"
-    )
-
     while True:
+        try:
+            baris = input("bioskop> ").strip()
+        except EOFError:
+            break
 
-        print("bioskop> ", end="")
-        input_user = input().strip()
-
-        if input_user == "":
+        if not baris:
             continue
 
-        bagian = input_user.split(maxsplit=1)
-        perintah = bagian[0].upper()
+        parts = baris.split(None, 1)
+        perintah = parts[0].upper()
 
-        if perintah == "TAMBAH":
+        # PERINTAH INSERT
+        if perintah == "INSERT":
+            sisa = parts[1] if len(parts) > 1 else ""
+            data = parse_insert(sisa)
 
-            if len(bagian) < 2:
-                print(
-                    "Format tambah belum sesuai. Ketik BANTUAN.\n"
-                )
+            if data is None:
+                print("Format tambah belum sesuai. Ketik HELP.\n")
                 continue
 
-            data = bagian[1]
-
-            pola = r'^(\d+)\s+"([^"]*)"\s+"([^"]*)"\s+(\d+)\s+"([^"]*)"$'
-            hasil = re.match(pola, data)
-
-            if hasil is None:
-                print(
-                    "Format tambah belum sesuai. Ketik BANTUAN.\n"
-                )
+            if id_sudah_ada(daftar_film, data["id"]):
+                print(f"ID {data['id']} sudah terpakai.\n")
                 continue
 
-            id = int(hasil.group(1))
-            judul = hasil.group(2)
-            genre = hasil.group(3)
-            durasi = int(hasil.group(4))
-            studio = hasil.group(5)
+            daftar_film.append(FilmTayang(
+                data["id"], data["judul"], data["genre"], data["durasi"],
+                data["studio"], data["klasifikasiUsia"], data["hargaTiket"],
+                data["jamTayang"], data["statusTayang"]
+            ))
+            print(f"Film \"{data['judul']}\" berhasil ditambahkan.\n")
 
-            if cariIndex(daftarFilm, id) != -1:
-                print(
-                    "ID",
-                    id,
-                    "sudah terpakai.\n"
-                )
+        # PERINTAH SHOW
+        elif perintah == "SHOW":
+            tampilkan_semua(daftar_film)
 
-            else:
-                film = Film()
-
-                film.setId(id)
-                film.setJudul(judul)
-                film.setGenre(genre)
-                film.setDurasi(durasi)
-                film.setStudio(studio)
-
-                daftarFilm.append(film)
-
-                print(
-                    'Film "' +
-                    judul +
-                    '" berhasil dicatat.\n'
-                )
-
-        elif perintah == "UBAH":
-
-            if len(bagian) < 2:
-                print(
-                    "Format ubah belum sesuai. Ketik BANTUAN.\n"
-                )
-                continue
-
-            data = bagian[1]
-
-            pola = r'^(\d+)\s+"([^"]*)"\s+"([^"]*)"\s+(\d+)\s+"([^"]*)"$'
-            hasil = re.match(pola, data)
-
-            if hasil is None:
-                print(
-                    "Format ubah belum sesuai. Ketik BANTUAN.\n"
-                )
-                continue
-
-            id = int(hasil.group(1))
-            judul = hasil.group(2)
-            genre = hasil.group(3)
-            durasi = int(hasil.group(4))
-            studio = hasil.group(5)
-
-            index = cariIndex(daftarFilm, id)
-
-            if index == -1:
-                print(
-                    "Tidak ada film dengan ID",
-                    id,
-                    ".\n"
-                )
-
-            else:
-                daftarFilm[index].setJudul(judul)
-                daftarFilm[index].setGenre(genre)
-                daftarFilm[index].setDurasi(durasi)
-                daftarFilm[index].setStudio(studio)
-
-                print(
-                    "Data film ID",
-                    id,
-                    "telah diperbarui.\n"
-                )
-
-        elif perintah == "HAPUS":
-
-            if len(bagian) < 2:
-                print("Masukkan ID yang valid.\n")
-                continue
-
-            try:
-                id = int(bagian[1].strip())
-            except ValueError:
-                print("Masukkan ID yang valid.\n")
-                continue
-
-            index = cariIndex(daftarFilm, id)
-
-            if index == -1:
-                print(
-                    "Tidak ada film dengan ID",
-                    id,
-                    ".\n"
-                )
-
-            else:
-                daftarFilm.pop(index)
-
-                print(
-                    "Data film ID",
-                    id,
-                    "telah dihapus.\n"
-                )
-
-        elif perintah == "CARI":
-
-            if len(bagian) < 2:
-                print("Masukkan ID yang valid.\n")
-                continue
-
-            try:
-                id = int(bagian[1].strip())
-            except ValueError:
-                print("Masukkan ID yang valid.\n")
-                continue
-
-            index = cariIndex(daftarFilm, id)
-
-            if index == -1:
-                print(
-                    "Film dengan ID",
-                    id,
-                    "tidak ditemukan.\n"
-                )
-
-            else:
-                tampilkanSatu(daftarFilm[index])
-                print()
-
-        elif perintah == "DAFTAR":
-
-            tampilkanSemua(daftarFilm)
-
-        elif perintah == "BANTUAN":
-
+        # PERINTAH HELP
+        elif perintah == "HELP":
             panduan()
 
-        elif perintah == "KELUAR":
-
+        # PERINTAH EXIT
+        elif perintah == "EXIT":
             break
 
         else:
-
-            print(
-                "Perintah tidak dikenali. Ketik BANTUAN untuk melihat pilihan.\n"
-            )
+            print("Perintah tidak dikenali. Ketik HELP.\n")
 
     outro()
 
